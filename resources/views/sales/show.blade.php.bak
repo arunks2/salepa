@@ -1,0 +1,166 @@
+	@extends('layout')
+
+@section('title')
+Create Sale
+@stop
+
+@section('content')
+<div id="wrapper" class="container">
+	
+	<div id="top">
+		@include('user.topbar')
+		@include('user.stats')
+	</div>
+
+	@include('user.sidebar')
+	
+	<div id="main" class="clearfix">
+		<div class="breadcrumbs-container">
+			<ol class="breadcrumb">
+			  <li><a href="/user/dashboard">Dashboard</a></li>
+			  <li class="active">{{ $sale->name }}</li>
+			</ol>
+		</div>
+
+		@include('user.saleDetails')
+
+		<div class="fluid">	
+				<div class="fluid">		
+					<div class="widget grid12">
+						<div class="widget-header">
+							<h3 class="widget-title">Products</h3>
+							<a  href="#myModal" role="button" class="new-button" data-toggle="modal" data-target="#myModal">
+								<button class="btn btn-info new-button">+ Create a Product</button>
+							</a>
+						</div>
+
+					@include('user.salesTable')	
+					
+					</div>
+				</div>
+		</div>
+
+		@include('user.createProductModal')
+
+	</div>
+		
+</div>
+@stop
+@section('footer_scripts')
+
+
+<script>
+// if product created flash==true
+jQuery(document).ready(function($) {
+	@if(isset($productCreated))
+		
+		notify('Product created','success','center', true);
+	@endif
+
+});
+</script>
+
+<script>
+	$( "#purchaseYear" ).datepicker({
+			changeMonth: false,
+	        changeYear: true,
+	        showButtonPanel: true,
+	        yearRange: '1950:2013', // Optional Year Range
+	        dateFormat: 'yy',
+	        onClose: function(dateText, inst) { 
+	            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+	            $(this).datepicker('setDate', new Date(year, 0, 1));
+	        }});
+</script>
+
+
+
+<script>
+Dropzone.autoDiscover=false;
+console.log($('meta[name="csrf-token"]').attr('content'));
+$('.dropzone').each(function() {
+	$(this).dropzone({
+		paramName:'photo',
+		maxFilesize:6,
+		sending: function(file, xhr, formData) {
+				formData.append('_token',$('meta[name="csrf-token"]').attr('content'));
+				console.log(xhr);
+			},
+		success: function(html) {
+			notify('Images uploaded', 'success','topRight');
+			
+			var productId= html['xhr'].responseText;
+			$.ajax({
+  				url: "/user/"+productId+"/productimage",
+  				
+  				cache: false,
+  				success: function(html){
+  					var image='<div class="allimages" id="allimages';
+  					image+=productId;
+  					image+='">';
+  					for(i in html)
+  					{
+  						image+='<img src="/';
+  						image+=html[i].thumbnail_path;
+  						image+='"/>';
+  					}
+  						image+='</div>';
+  					$('#allimages'+productId).replaceWith(image);
+				}
+			});
+			
+		}
+	});
+});
+		
+</script>
+<script>
+  $(document).ready(function(){
+  	  $( "#starts_on" ).datepicker({
+  		dateFormat: "yy-mm-dd"
+		});
+  	  $('#starts_on').on('changeDate', function(ev){
+  	        $('#starts_on').val(ev.target.value);
+  	     });
+  	  $("#ends_on" ).datepicker({
+  		dateFormat: "yy-mm-dd"
+		});
+  	  $('#more-button').on('click', function(event) {
+  	  	event.preventDefault();
+  	  	$('#more-content').toggle(200);
+  	  });
+  	  $('.ajaxSoldButton').each(function() {
+  	  	$(this).on('click',function(event){
+  	  	var t=$(this);
+  	  	event.preventDefault();
+  	  	$(this).removeClass('btn-blue').addClass('btn-green');
+  	  	$(this).children('.fa-check').removeClass('fa-check').addClass('fa-spinner fa-spin fa-1x fa-fw');
+  	  	var productId= $(this).data('id');
+  	  	
+  	  	$.ajax({
+		url: "/user/"+productId+"/changestatus",
+		
+		cache: false,
+		success: function(html){
+			if(html==1)
+				{
+
+					 t.removeClass('btn-blue').addClass('btn-red disabled');
+					 t.children('.fa-spin').removeClass('fa-spinner fa-spin fa-1x fa-fw').addClass('fa-check');
+				}
+			}
+  	  		});
+
+  		});
+
+  	  });
+  	  
+});
+  </script>
+@if (session('product_created'))
+    <script>
+    	notify('Product created','success','center', true);
+    </script>
+@endif
+
+@stop

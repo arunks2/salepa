@@ -1,0 +1,41 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Application Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register all of the routes for an application.
+| It's a breeze. Simply tell Laravel the URIs it should respond to
+| and give it the controller to call when that URI is requested.
+|
+*/
+
+Route::get('/sales/{saleSlug}','PublicViewController@showSale');
+Route::get('/sales/{saleSlug}/{productId}','PublicViewController@showProduct');
+Route::get('/', ['as'=>'home', 'uses'=>'GeneralController@index']);
+Route::get('login', 'GeneralController@login');
+Route::post('login', ['as'=>'login', 'uses'=>'GeneralController@fbLoginAction']);
+Route::get('logout', ['as'=>'logout', 'uses'=>'GeneralController@logout']);
+
+Route::get('/user/dashboard', ['as'=>'dashboard', 'uses'=>'AppController@dashboard']);
+Route::get('/user/sales', ['as'=>'mysales', 'uses'=>'AppController@dashboard']); //goes to mysales
+Route::get('/user/create_sale', ['as'=>'create_sale', 'uses'=>'SalesController@create']);
+
+Route::post('/user/sales_created','SalesController@store');
+Route::get('/user/{saleSlug}',['as'=>'sale_show','uses'=>'SalesController@show']);
+Route::post('/user/{saleId}/sale_edit','SalesController@edit');
+Route::get('/user/{saleId}/delete', 'SalesController@destroy');
+
+Route::post('/user/create_product','ProductsController@store');
+Route::post('/user/products/{productId}/edit_product', 'ProductsController@edit');
+Route::get('/user/products/{productId}/delete','ProductsController@destroy');
+Route::get('/user/products/{productId}','ProductsController@show');
+Route::post('/user/{productId}/addphotos','PhotoController@store');
+Route::get('/user/{productId}/changestatus','ProductsController@changeStatus');
+
+Route::get('/user/{productId}/productimage', 'ProductsController@getImages');
+
+Route::post('/user/send_message','ConversationsController@store');
+
+Route::get('/sales/','PublicViewController@show');
